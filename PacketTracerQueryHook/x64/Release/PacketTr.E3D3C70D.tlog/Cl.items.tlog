@@ -1,4 +1,12 @@
+C:\Users\tarek\RiderProjects\PacketTracerQueryHook\PacketTracerQueryHook\device_overlay.cpp;C:\Users\tarek\RiderProjects\PacketTracerQueryHook\PacketTracerQueryHook\x64\Release\device_overlay.obj
 C:\Users\tarek\RiderProjects\PacketTracerQueryHook\PacketTracerQueryHook\dllmain.cpp;C:\Users\tarek\RiderProjects\PacketTracerQueryHook\PacketTracerQueryHook\x64\Release\dllmain.obj
+C:\Users\tarek\RiderProjects\PacketTracerQueryHook\PacketTracerQueryHook\imgui\imgui.cpp;C:\Users\tarek\RiderProjects\PacketTracerQueryHook\PacketTracerQueryHook\x64\Release\imgui.obj
+C:\Users\tarek\RiderProjects\PacketTracerQueryHook\PacketTracerQueryHook\imgui\imgui_draw.cpp;C:\Users\tarek\RiderProjects\PacketTracerQueryHook\PacketTracerQueryHook\x64\Release\imgui_draw.obj
+C:\Users\tarek\RiderProjects\PacketTracerQueryHook\PacketTracerQueryHook\imgui\imgui_impl_dx11.cpp;C:\Users\tarek\RiderProjects\PacketTracerQueryHook\PacketTracerQueryHook\x64\Release\imgui_impl_dx11.obj
+C:\Users\tarek\RiderProjects\PacketTracerQueryHook\PacketTracerQueryHook\imgui\imgui_impl_win32.cpp;C:\Users\tarek\RiderProjects\PacketTracerQueryHook\PacketTracerQueryHook\x64\Release\imgui_impl_win32.obj
+C:\Users\tarek\RiderProjects\PacketTracerQueryHook\PacketTracerQueryHook\imgui\imgui_tables.cpp;C:\Users\tarek\RiderProjects\PacketTracerQueryHook\PacketTracerQueryHook\x64\Release\imgui_tables.obj
+C:\Users\tarek\RiderProjects\PacketTracerQueryHook\PacketTracerQueryHook\imgui\imgui_widgets.cpp;C:\Users\tarek\RiderProjects\PacketTracerQueryHook\PacketTracerQueryHook\x64\Release\imgui_widgets.obj
+C:\Users\tarek\RiderProjects\PacketTracerQueryHook\PacketTracerQueryHook\kiero.cpp;C:\Users\tarek\RiderProjects\PacketTracerQueryHook\PacketTracerQueryHook\x64\Release\kiero.obj
 C:\Users\tarek\RiderProjects\PacketTracerQueryHook\PacketTracerQueryHook\minhook\src\buffer.c;C:\Users\tarek\RiderProjects\PacketTracerQueryHook\PacketTracerQueryHook\x64\Release\buffer.obj
 C:\Users\tarek\RiderProjects\PacketTracerQueryHook\PacketTracerQueryHook\minhook\src\hde\hde32.c;C:\Users\tarek\RiderProjects\PacketTracerQueryHook\PacketTracerQueryHook\x64\Release\hde32.obj
 C:\Users\tarek\RiderProjects\PacketTracerQueryHook\PacketTracerQueryHook\minhook\src\hde\hde64.c;C:\Users\tarek\RiderProjects\PacketTracerQueryHook\PacketTracerQueryHook\x64\Release\hde64.obj

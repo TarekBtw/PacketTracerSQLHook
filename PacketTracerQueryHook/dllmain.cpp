@@ -8,13 +8,17 @@
 #include <iomanip>
 #include <thread>
 #include <atomic>
+#include <dxgi.h>
+#include "device_overlay.h"
 #include "minhook/include/MinHook.h"
+
 #undef max
+
+
 
 typedef bool (__fastcall *QSqlQuery_exec_t)(void* thisptr, const char* query);
 QSqlQuery_exec_t QSqlQuery_exec_Original = nullptr;
 
-// Outer map: device_name, Inner map: field/element (e.g., Host Name), value: answer
 std::map<std::string, std::map<std::string, std::string>>* g_deviceAnswers = nullptr;
 std::atomic<bool> g_running(true);
 
@@ -156,7 +160,6 @@ bool __fastcall QSqlQuery_exec_Hook(void* thisptr, const char* query) {
         return false;
 }
 
-// --- DLL entry point ---
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD reason, LPVOID lpReserved) {
     static HANDLE hThread = nullptr;
     if (reason == DLL_PROCESS_ATTACH) {
@@ -179,6 +182,10 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD reason, LPVOID lpReserved) {
         // Start hotkey thread
         g_running = true;
         hThread = CreateThread(nullptr, 0, HotkeyThread, nullptr, 0, nullptr);
+
+        // Start D3D11 overlay hook thread
+        CreateThread(nullptr, 0, MainThread, nullptr, 0, nullptr);
+
     } else if (reason == DLL_PROCESS_DETACH) {
         g_running = false;
         if (hThread) {
