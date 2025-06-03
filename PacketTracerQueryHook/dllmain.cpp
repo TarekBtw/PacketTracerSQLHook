@@ -257,7 +257,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD reason, LPVOID lpReserved) {
         }
         
         LogMessage("Hook installed successfully!");
-        LogMessage("Monitoring SQL queries...");
+        LogMessage("Monitoring SQL queries.");
         LogMessage("--------------------------------");
     }
     else if (reason == DLL_PROCESS_DETACH) {
@@ -267,7 +267,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD reason, LPVOID lpReserved) {
         
         // Close log file
         if (logFile.is_open()) {
-            LogMessage("===== QueryLogger DLL Unloaded =====");
+            LogMessage("==== QueryLogger DLL Unloaded ====");
             logFile.close();
         }
         
