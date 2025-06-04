@@ -1,5 +1,5 @@
-// overlay.cpp
 #include <Windows.h>
+#undef max
 #include <d3d11.h>
 #include <tchar.h>
 #include <string>
@@ -10,6 +10,8 @@
 #include <streambuf>
 #include <atomic>
 #include <sstream>
+#include <windowsx.h>
+
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_win32.h"
 #include "imgui/imgui_impl_dx11.h"
@@ -35,7 +37,6 @@ int currentDeviceIndex = 0;
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-
 std::string GetCurrentDir() {
     char path[MAX_PATH] = {0};
     GetModuleFileNameA(NULL, path, MAX_PATH);
@@ -46,7 +47,6 @@ std::string GetCurrentDir() {
     }
     return "";
 }
-
 
 void ParseDeviceSections() {
     deviceSections.clear();
@@ -119,7 +119,6 @@ void LoadOverlayText() {
     OutputDebugStringA(dbgprint_buf); \
 } while(0)
 
-
 HWND FindPacketTracerWindow() {
     HWND result = nullptr;
     EnumWindows([](HWND hwnd, LPARAM lParam) -> BOOL {
@@ -133,14 +132,40 @@ HWND FindPacketTracerWindow() {
     }, (LPARAM)&result);
     return result;
 }
-
+static const int RESIZE_BORDER = 6;
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    if (msg == WM_NCHITTEST) {
-        return HTCAPTION;
+    switch (msg) {
+    case WM_NCHITTEST: {
+            POINT pt;
+            pt.x = GET_X_LPARAM(lParam);
+            pt.y = GET_Y_LPARAM(lParam);
+            ScreenToClient(hWnd, &pt);
+
+            RECT rc;
+            GetClientRect(hWnd, &rc);
+            int w = rc.right;
+            int h = rc.bottom;
+
+            bool left   = (pt.x <  RESIZE_BORDER);
+            bool right  = (pt.x >= w - RESIZE_BORDER);
+            bool top    = (pt.y <  RESIZE_BORDER);
+            bool bottom = (pt.y >= h - RESIZE_BORDER);
+
+            if (left && top)      return HTTOPLEFT;
+            if (right && top)     return HTTOPRIGHT;
+            if (left && bottom)   return HTBOTTOMLEFT;
+            if (right && bottom)  return HTBOTTOMRIGHT;
+            if (left)             return HTLEFT;
+            if (right)            return HTRIGHT;
+            if (top)              return HTTOP;
+            if (bottom)           return HTBOTTOM;
+            return HTCAPTION;
     }
-    if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
-        return true;
-    return DefWindowProc(hWnd, msg, wParam, lParam);
+    default:
+        if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
+            return true;
+        return DefWindowProc(hWnd, msg, wParam, lParam);
+    }
 }
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int) {
@@ -180,22 +205,19 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int) {
     DBGPRINT("Overlay: PT window rect: L=%ld T=%ld R=%ld B=%ld\n",
              rc.left, rc.top, rc.right, rc.bottom);
 
-    int overlayWidth  = 300;
-    int overlayHeight = 200;
+    int overlayWidth  = 800;
+    int overlayHeight = 300;
     int x = rc.right - overlayWidth - 32;
     int y = rc.bottom - overlayHeight - 64;
 
     HWND hwnd = CreateWindowEx(
-        WS_EX_TOPMOST | WS_EX_LAYERED,
+        WS_EX_TOPMOST | WS_EX_LAYERED | WS_EX_TOOLWINDOW,
         wc.lpszClassName, _T("Packet Tracer Solution Overlay"),
-        WS_OVERLAPPEDWINDOW,
+        WS_POPUP,
         x, y, overlayWidth, overlayHeight,
         NULL, NULL, wc.hInstance, NULL
     );
-    
-    LONG style = GetWindowLong(hwnd, GWL_STYLE);
-    style &= ~(WS_MINIMIZEBOX | WS_MAXIMIZEBOX);
-    SetWindowLong(hwnd, GWL_STYLE, style);
+    SetLayeredWindowAttributes(hwnd, RGB(0,0,0), 0, LWA_COLORKEY);
     
     DBGPRINT("Overlay: CreateWindowEx returned hwnd=0x%p\n", hwnd);
     g_OverlayHwnd = hwnd;
@@ -204,7 +226,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int) {
         return 1;
     }
 
-    SetLayeredWindowAttributes(hwnd, RGB(0,0,0), 0, LWA_COLORKEY);
     DBGPRINT("Overlay: SetLayeredWindowAttributes set\n");
 
     DXGI_SWAP_CHAIN_DESC sd = {};
@@ -262,7 +283,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int) {
     DBGPRINT("Overlay: ShowWindow done\n");
 
     bool overlayVisible = true;
-    static ImVec2 overlayPos = ImVec2(10, 10);
+    static ImVec2 overlayPos = ImVec2(0, 0);
     static float overlayScale = 1.0f;
 
     int lastSwapWidth  = overlayWidth;
@@ -274,57 +295,83 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int) {
     int frame = 0;
 
     while (running) {
+        // --- FORCE HWND/SWAPCHAIN SIZE BEFORE IMGUI ---
+        int desiredW = 800;
+        int desiredH = 300;
+        RECT hwndRect;
+        GetClientRect(g_OverlayHwnd, &hwndRect);
+        int currW = hwndRect.right - hwndRect.left;
+        int currH = hwndRect.bottom - hwndRect.top;
+        if (currW != desiredW || currH != desiredH) {
+            SetWindowPos(g_OverlayHwnd, NULL, 0, 0, desiredW, desiredH, SWP_NOZORDER | SWP_NOMOVE);
+            swapChain->ResizeBuffers(0, desiredW, desiredH, DXGI_FORMAT_UNKNOWN, 0);
+            if (mainRenderTargetView) {
+                mainRenderTargetView->Release();
+                mainRenderTargetView = nullptr;
+            }
+            ID3D11Texture2D* pNewBackBuffer = nullptr;
+            if (SUCCEEDED(swapChain->GetBuffer(0, IID_PPV_ARGS(&pNewBackBuffer)))) {
+                device->CreateRenderTargetView(pNewBackBuffer, NULL, &mainRenderTargetView);
+                pNewBackBuffer->Release();
+            }
+            lastSwapWidth = desiredW;
+            lastSwapHeight = desiredH;
+        }
+
+        // --- Windows message pump ---
         while (PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE)) {
             if (msg.message == WM_HOTKEY && msg.wParam == 1) {
                 overlayVisible = !overlayVisible;
-                DBGPRINT("Overlay: Insert pressed, overlayVisible = %d\n", (int)overlayVisible);
             }
             TranslateMessage(&msg);
             DispatchMessage(&msg);
             if (msg.message == WM_QUIT) {
-                DBGPRINT("Overlay: got WM_QUIT, exiting\n");
                 running = false;
             }
         }
 
         if (!IsWindow(targetHwnd)) {
-            DBGPRINT("Overlay: target window destroyed, exiting\n");
+            // Packet Tracer closed
             break;
         }
 
-        // Show or hide overlay
+        // Show or hide the overlay
         if (overlayVisible) {
             ShowWindow(hwnd, SW_SHOW);
         } else {
             ShowWindow(hwnd, SW_HIDE);
         }
 
+        // If hidden, make click‐through
         LONG exStyle = WS_EX_TOPMOST | WS_EX_LAYERED | WS_EX_TOOLWINDOW;
-        if (overlayVisible) {
-            SetWindowLong(hwnd, GWL_EXSTYLE, exStyle);
-        } else {
+        if (!overlayVisible) {
             SetWindowLong(hwnd, GWL_EXSTYLE, exStyle | WS_EX_TRANSPARENT);
+        } else {
+            SetWindowLong(hwnd, GWL_EXSTYLE, exStyle);
         }
 
+        // Reload devices.txt every 30 frames
         if (frame % 30 == 0) {
-            DBGPRINT("Overlay: LoadOverlayText at frame %d\n", frame);
             LoadOverlayText();
         }
         ++frame;
 
+        // PageUp / PageDown to flip through deviceSections
         if (!deviceSections.empty()) {
-            if (GetAsyncKeyState(VK_PRIOR) & 1) { // Page Up
+            if (GetAsyncKeyState(VK_PRIOR) & 1) {
                 currentDeviceIndex = (currentDeviceIndex - 1 + (int)deviceSections.size()) % (int)deviceSections.size();
             }
-            if (GetAsyncKeyState(VK_NEXT) & 1) {  // Page Down
+            if (GetAsyncKeyState(VK_NEXT) & 1) {
                 currentDeviceIndex = (currentDeviceIndex + 1) % (int)deviceSections.size();
             }
         }
 
+        // --- Start ImGui Frame ---
         ImGui_ImplDX11_NewFrame();
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
 
+        // Apply Ctrl+Wheel zoom
         ImGuiIO& io = ImGui::GetIO();
         io.FontGlobalScale = overlayScale;
         if (io.KeyCtrl && io.MouseWheel != 0.0f) {
@@ -332,75 +379,47 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int) {
             overlayScale = ImClamp(overlayScale, 0.3f, 3.0f);
         }
 
-        ImGui::PushStyleColor(ImGuiCol_WindowBg,      ImVec4(1.0f, 1.0f, 1.0f, 0.70f));
-        ImGui::PushStyleColor(ImGuiCol_TitleBg,       ImVec4(1.0f, 1.0f, 1.0f, 1.00f));
-        ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImVec4(1.0f, 1.0f, 1.0f, 1.00f));
-        ImGui::PushStyleColor(ImGuiCol_Text,          ImVec4(0.0f, 0.0f, 0.0f, 1.00f));
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(4.0f, 4.0f));
-        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,  ImVec2(2.0f, 2.0f));
+        ImGui::PushStyleColor(ImGuiCol_WindowBg,      ImVec4(1,1,1,0.70f));
+        ImGui::PushStyleColor(ImGuiCol_TitleBg,       ImVec4(1,1,1,1.00f));
+        ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImVec4(1,1,1,1.00f));
+        ImGui::PushStyleColor(ImGuiCol_Text,          ImVec4(0,0,0,1.00f));
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(4,4));
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,  ImVec2(2,2));
+
+        // Build the multiline body string for the current device
+        const char* bodyText = "(no device data)";
+        if (!deviceSections.empty()) {
+            bodyText = deviceSections[currentDeviceIndex].c_str();
+        }
+
+        // Build the footer string: "Device X/N"
+        std::string footerText;
+        if (!deviceSections.empty()) {
+            std::stringstream ss;
+            ss << "Device " << (currentDeviceIndex + 1) << "/" << deviceSections.size();
+            footerText = ss.str();
+        }
 
         ImGuiWindowFlags window_flags =
-            0 |  
-            ImGuiWindowFlags_NoCollapse;        
+            ImGuiWindowFlags_NoCollapse | 
+            ImGuiWindowFlags_AlwaysUseWindowPadding;
 
-        ImGui::SetNextWindowPos(overlayPos, ImGuiCond_Always);
-        ImGui::SetNextWindowSize(ImVec2(600, 400), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+        ImGui::SetNextWindowSize(ImVec2(800, 300), ImGuiCond_Always);
         ImGui::Begin("##DeviceSolution", nullptr, window_flags);
 
-        if (!deviceSections.empty()) {
-            ImGui::TextUnformatted(deviceSections[currentDeviceIndex].c_str());
-        } else {
-            ImGui::TextUnformatted("(no device data)");
-        }
+        // --- SCROLLABLE CHILD FOR LONG LINES ---
+        ImGui::BeginChild("BodyScroll", ImVec2(580, 330), false, ImGuiWindowFlags_HorizontalScrollbar);
+        ImGui::TextUnformatted(bodyText);
+        ImGui::EndChild();
 
-        if (!deviceSections.empty()) {
-            std::stringstream footer;
-            footer << "Device " << (currentDeviceIndex + 1) << "/" << deviceSections.size();
-            ImGui::TextDisabled(footer.str().c_str());
+        if (!footerText.empty()) {
+            ImGui::TextDisabled(footerText.c_str());
         }
         ImGui::End();
+
         ImGui::PopStyleColor(4);
         ImGui::PopStyleVar(2);
-        {
-            ImVec2 neededSize = ImGui::GetWindowSize(); 
-            int newWidth  = (int)neededSize.x;
-            int newHeight = (int)neededSize.y;
-
-            if (newWidth != lastSwapWidth || newHeight != lastSwapHeight) {
-                SetWindowPos(
-                    g_OverlayHwnd,
-                    NULL,
-                    0,  
-                    0,  
-                    newWidth,
-                    newHeight,
-                    SWP_NOZORDER | SWP_NOMOVE
-                );
-
-                if (mainRenderTargetView) {
-                    mainRenderTargetView->Release();
-                    mainRenderTargetView = nullptr;
-                }
-
-                swapChain->ResizeBuffers(0, newWidth, newHeight, DXGI_FORMAT_UNKNOWN, 0);
-
-                {
-                    ID3D11Texture2D* pNewBackBuffer = nullptr;
-                    HRESULT hr4 = swapChain->GetBuffer(0, IID_PPV_ARGS(&pNewBackBuffer));
-                    DBGPRINT("Overlay: swapChain->GetBuffer (after Resize) = 0x%08lx\n", hr4);
-                    if (SUCCEEDED(hr4)) {
-                        device->CreateRenderTargetView(pNewBackBuffer, NULL, &mainRenderTargetView);
-                        pNewBackBuffer->Release();
-                    }
-                }
-
-                lastSwapWidth  = newWidth;
-                lastSwapHeight = newHeight;
-                DBGPRINT("Overlay: Resized swapChain to %d×%d\n", newWidth, newHeight);
-            }
-        }
-
-        overlayPos = ImGui::GetWindowPos();
 
         ImGui::EndFrame();
         ImGui::Render();
