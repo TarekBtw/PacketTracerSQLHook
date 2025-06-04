@@ -43,7 +43,7 @@ std::string GetCurrentDir() {
     std::string fullPath(path);
     size_t pos = fullPath.find_last_of("\\/");
     if (pos != std::string::npos) {
-        return fullPath.substr(0, pos + 1); // include trailing slash
+        return fullPath.substr(0, pos + 1);
     }
     return "";
 }
@@ -126,9 +126,9 @@ HWND FindPacketTracerWindow() {
         GetWindowTextA(hwnd, title, sizeof(title));
         if (strstr(title, "Cisco Packet Tracer")) {
             *((HWND*)lParam) = hwnd;
-            return FALSE; // stop enumeration
+            return FALSE; 
         }
-        return TRUE; // keep looking
+        return TRUE; 
     }, (LPARAM)&result);
     return result;
 }
@@ -205,7 +205,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int) {
     DBGPRINT("Overlay: PT window rect: L=%ld T=%ld R=%ld B=%ld\n",
              rc.left, rc.top, rc.right, rc.bottom);
 
-    int overlayWidth  = 800;
+    int overlayWidth  = 1000;
     int overlayHeight = 300;
     int x = rc.right - overlayWidth - 32;
     int y = rc.bottom - overlayHeight - 64;
@@ -295,8 +295,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int) {
     int frame = 0;
 
     while (running) {
-        // --- FORCE HWND/SWAPCHAIN SIZE BEFORE IMGUI ---
-        int desiredW = 800;
+        int desiredW = 1000;
         int desiredH = 300;
         RECT hwndRect;
         GetClientRect(g_OverlayHwnd, &hwndRect);
@@ -318,7 +317,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int) {
             lastSwapHeight = desiredH;
         }
 
-        // --- Windows message pump ---
         while (PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE)) {
             if (msg.message == WM_HOTKEY && msg.wParam == 1) {
                 overlayVisible = !overlayVisible;
@@ -331,18 +329,15 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int) {
         }
 
         if (!IsWindow(targetHwnd)) {
-            // Packet Tracer closed
             break;
         }
 
-        // Show or hide the overlay
         if (overlayVisible) {
             ShowWindow(hwnd, SW_SHOW);
         } else {
             ShowWindow(hwnd, SW_HIDE);
         }
 
-        // If hidden, make click‐through
         LONG exStyle = WS_EX_TOPMOST | WS_EX_LAYERED | WS_EX_TOOLWINDOW;
         if (!overlayVisible) {
             SetWindowLong(hwnd, GWL_EXSTYLE, exStyle | WS_EX_TRANSPARENT);
@@ -350,13 +345,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int) {
             SetWindowLong(hwnd, GWL_EXSTYLE, exStyle);
         }
 
-        // Reload devices.txt every 30 frames
         if (frame % 30 == 0) {
             LoadOverlayText();
         }
         ++frame;
 
-        // PageUp / PageDown to flip through deviceSections
         if (!deviceSections.empty()) {
             if (GetAsyncKeyState(VK_PRIOR) & 1) {
                 currentDeviceIndex = (currentDeviceIndex - 1 + (int)deviceSections.size()) % (int)deviceSections.size();
@@ -366,12 +359,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int) {
             }
         }
 
-        // --- Start ImGui Frame ---
         ImGui_ImplDX11_NewFrame();
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
 
-        // Apply Ctrl+Wheel zoom
         ImGuiIO& io = ImGui::GetIO();
         io.FontGlobalScale = overlayScale;
         if (io.KeyCtrl && io.MouseWheel != 0.0f) {
@@ -379,20 +370,18 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int) {
             overlayScale = ImClamp(overlayScale, 0.3f, 3.0f);
         }
 
-        ImGui::PushStyleColor(ImGuiCol_WindowBg,      ImVec4(1,1,1,0.70f));
+        ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0,0,0,0.20f));
         ImGui::PushStyleColor(ImGuiCol_TitleBg,       ImVec4(1,1,1,1.00f));
         ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImVec4(1,1,1,1.00f));
-        ImGui::PushStyleColor(ImGuiCol_Text,          ImVec4(0,0,0,1.00f));
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1,1,1,0.33f));
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(4,4));
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,  ImVec2(2,2));
 
-        // Build the multiline body string for the current device
         const char* bodyText = "(no device data)";
         if (!deviceSections.empty()) {
             bodyText = deviceSections[currentDeviceIndex].c_str();
         }
 
-        // Build the footer string: "Device X/N"
         std::string footerText;
         if (!deviceSections.empty()) {
             std::stringstream ss;
@@ -401,14 +390,17 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int) {
         }
 
         ImGuiWindowFlags window_flags =
-            ImGuiWindowFlags_NoCollapse | 
-            ImGuiWindowFlags_AlwaysUseWindowPadding;
+            ImGuiWindowFlags_NoResize |
+            ImGuiWindowFlags_NoScrollbar |
+            ImGuiWindowFlags_NoCollapse |
+            ImGuiWindowFlags_NoSavedSettings |
+            ImGuiWindowFlags_AlwaysAutoResize |
+            ImGuiWindowFlags_NoBackground;
 
         ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
-        ImGui::SetNextWindowSize(ImVec2(800, 300), ImGuiCond_Always);
+        ImGui::SetNextWindowSize(ImVec2(1000, 300), ImGuiCond_Always);
         ImGui::Begin("##DeviceSolution", nullptr, window_flags);
 
-        // --- SCROLLABLE CHILD FOR LONG LINES ---
         ImGui::BeginChild("BodyScroll", ImVec2(580, 330), false, ImGuiWindowFlags_HorizontalScrollbar);
         ImGui::TextUnformatted(bodyText);
         ImGui::EndChild();
