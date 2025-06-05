@@ -205,8 +205,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int) {
     DBGPRINT("Overlay: PT window rect: L=%ld T=%ld R=%ld B=%ld\n",
              rc.left, rc.top, rc.right, rc.bottom);
 
-    int overlayWidth  = 1000;
-    int overlayHeight = 300;
+    int overlayWidth  = 1400;
+    int overlayHeight = 500;
     int x = rc.right - overlayWidth - 32;
     int y = rc.bottom - overlayHeight - 64;
 
@@ -295,8 +295,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int) {
     int frame = 0;
 
     while (running) {
-        int desiredW = 1000;
-        int desiredH = 300;
+        int desiredW = 1400;
+        int desiredH = 500;
         RECT hwndRect;
         GetClientRect(g_OverlayHwnd, &hwndRect);
         int currW = hwndRect.right - hwndRect.left;
@@ -398,7 +398,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int) {
             ImGuiWindowFlags_NoBackground;
 
         ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
-        ImGui::SetNextWindowSize(ImVec2(1000, 300), ImGuiCond_Always);
+        ImGui::SetNextWindowSize(ImVec2(1400, 500), ImGuiCond_Always);
         ImGui::Begin("##DeviceSolution", nullptr, window_flags);
 
         ImGui::BeginChild("BodyScroll", ImVec2(580, 330), false, ImGuiWindowFlags_HorizontalScrollbar);
