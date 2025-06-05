@@ -1,4 +1,5 @@
 C:\Users\tarek\RiderProjects\PacketTracerQueryHook\PacketTracerQueryHook\dllmain.cpp;C:\Users\tarek\RiderProjects\PacketTracerQueryHook\PacketTracerQueryHook\x64\Release\dllmain.obj
+C:\Users\tarek\RiderProjects\PacketTracerQueryHook\PacketTracerQueryHook\kiero.cpp;C:\Users\tarek\RiderProjects\PacketTracerQueryHook\PacketTracerQueryHook\x64\Release\kiero.obj
 C:\Users\tarek\RiderProjects\PacketTracerQueryHook\PacketTracerQueryHook\minhook\src\buffer.c;C:\Users\tarek\RiderProjects\PacketTracerQueryHook\PacketTracerQueryHook\x64\Release\buffer.obj
 C:\Users\tarek\RiderProjects\PacketTracerQueryHook\PacketTracerQueryHook\minhook\src\hde\hde32.c;C:\Users\tarek\RiderProjects\PacketTracerQueryHook\PacketTracerQueryHook\x64\Release\hde32.obj
 C:\Users\tarek\RiderProjects\PacketTracerQueryHook\PacketTracerQueryHook\minhook\src\hde\hde64.c;C:\Users\tarek\RiderProjects\PacketTracerQueryHook\PacketTracerQueryHook\x64\Release\hde64.obj
