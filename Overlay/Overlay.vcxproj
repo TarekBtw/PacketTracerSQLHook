@@ -155,17 +155,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="imgui\binary_to_compressed_c.cpp" />
     <ClCompile Include="imgui\imgui.cpp" />
-    <ClCompile Include="imgui\imgui_demo.cpp" />
     <ClCompile Include="imgui\imgui_draw.cpp" />
-    <ClCompile Include="imgui\imgui_impl_dx10.cpp" />
     <ClCompile Include="imgui\imgui_impl_dx11.cpp" />
-    <ClCompile Include="imgui\imgui_impl_dx12.cpp" />
-    <ClCompile Include="imgui\imgui_impl_dx9.cpp" />
     <ClCompile Include="imgui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="imgui\imgui_impl_win32.cpp" />
-    <ClCompile Include="imgui\imgui_stdlib.cpp" />
     <ClCompile Include="imgui\imgui_tables.cpp" />
     <ClCompile Include="imgui\imgui_widgets.cpp" />
     <ClCompile Include="Overlay.cpp" />
@@ -181,50 +175,17 @@
     <ClInclude Include="imgui\image.h" />
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
-    <ClInclude Include="imgui\imgui_impl_dx10.h" />
     <ClInclude Include="imgui\imgui_impl_dx11.h" />
-    <ClInclude Include="imgui\imgui_impl_dx12.h" />
-    <ClInclude Include="imgui\imgui_impl_dx9.h" />
-    <ClInclude Include="imgui\imgui_impl_metal.h" />
     <ClInclude Include="imgui\imgui_impl_opengl3.h" />
     <ClInclude Include="imgui\imgui_impl_opengl3_loader.h" />
-    <ClInclude Include="imgui\imgui_impl_osx.h" />
     <ClInclude Include="imgui\imgui_impl_win32.h" />
     <ClInclude Include="imgui\imgui_internal.h" />
     <ClInclude Include="imgui\imgui_settings.h" />
-    <ClInclude Include="imgui\imgui_single_file.h" />
-    <ClInclude Include="imgui\imgui_stdlib.h" />
     <ClInclude Include="imgui\imstb_rectpack.h" />
     <ClInclude Include="imgui\imstb_textedit.h" />
     <ClInclude Include="imgui\imstb_truetype.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="imgui\.editorconfig" />
-    <Content Include="imgui\.gitattributes" />
-    <Content Include="imgui\.gitignore" />
-    <Content Include="imgui\Cousine-Regular.ttf" />
-    <Content Include="imgui\DroidSans.ttf" />
-    <Content Include="imgui\imgui.gdb" />
-    <Content Include="imgui\imgui.natstepfilter" />
-    <Content Include="imgui\imgui_impl_metal.mm" />
-    <Content Include="imgui\imgui_impl_osx.mm" />
-    <Content Include="imgui\Karla-Regular.ttf" />
-    <Content Include="imgui\LICENSE.txt" />
-    <Content Include="imgui\ProggyClean.ttf" />
-    <Content Include="imgui\ProggyTiny.ttf" />
-    <Content Include="imgui\README.md" />
-    <Content Include="imgui\README.txt" />
-    <Content Include="imgui\Roboto-Medium.ttf" />
-    <Content Include="imgui\sdlgpu3\build_instructions.txt" />
-    <Content Include="imgui\sdlgpu3\shader.frag" />
-    <Content Include="imgui\sdlgpu3\shader.vert" />
-    <Content Include="imgui\vulkan\build_instructions.txt" />
-    <Content Include="imgui\vulkan\generate_spv.sh" />
-    <Content Include="imgui\vulkan\glsl_shader.frag" />
-    <Content Include="imgui\vulkan\glsl_shader.vert" />
-  </ItemGroup>
-  <ItemGroup>
-    <Natvis Include="imgui\imgui.natvis" />
+    <ClInclude Include="imgui\inter.h" />
+    <ClInclude Include="imgui\user_circle.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

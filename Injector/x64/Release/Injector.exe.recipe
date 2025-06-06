@@ -2,7 +2,7 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>C:\Users\tarek\RiderProjects\firefoxOverlay\x64\Release\Injector.exe</FullPath>
+      <FullPath>C:\Users\tarek\RiderProjects\PacketTracerQueryHook\x64\Release\Injector.exe</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles />
